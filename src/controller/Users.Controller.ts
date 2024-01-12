@@ -12,7 +12,23 @@ const error = chalk.bgRed;
 
 export const getUsers = async (req: express.Request, res: express.Response) => {
   try {
-    const users = await prisma.user.findMany({});
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        address: true,
+        city: true,
+        zip: true,
+        posts: {
+          select: {
+            title: true,
+            description: true,
+            datePostPublished: true,
+          },
+        },
+      },
+    });
 
     return res.json({ status: 200, data: users });
   } catch (error) {
@@ -62,7 +78,6 @@ export const createUser = async (
 ) => {
   const { email, name, password, address, city, zip }: CreateUserTypes =
     req.body;
-  console.log("email, name, address, city zip ", email, name, city, zip);
 
   try {
     if (!email)
@@ -152,15 +167,46 @@ export const deleterUser = async (
       where: {
         id: userId,
       },
+      include: {
+        posts: {
+          include: {
+            comments: true,
+          },
+        },
+      },
     });
 
     if (!userExist) return res.json({ status: 400, message: "User not found" });
 
+    // delete on cascade (Before Comment)
+    const postIds = userExist.posts.map((post) => post.id);
+    const commentIds = userExist.posts.reduce((acc, post) => {
+      return acc.concat(post.comments.map((comment) => comment.id));
+    }, []);
+
+    await prisma.comment.deleteMany({
+      where: {
+        id: {
+          in: commentIds,
+        },
+      },
+    });
+
+    // After Posts
+    await prisma.post.deleteMany({
+      where: {
+        id: {
+          in: postIds,
+        },
+      },
+    });
+
+    // Finally
     await prisma.user.delete({
       where: { id: userId },
     });
 
-    return res.json({ status: 200, message: "User Deleted" });
+    return res.json({ status: 200, message: "User and related data deleted" });
   } catch (error) {
     console.error("Error deleterUser:", error);
     return res

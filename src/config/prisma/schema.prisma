@@ -11,27 +11,36 @@ datasource db {
 }
 
 model Post {
-  id String    @id @default(auto()) @map("_id") @db.ObjectId
-  title String
-  author   User      @relation(fields: [authorId], references: [id])
-  authorId String    @db.ObjectId
-  comments Comment[]
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  title             String
+  description       String
+  author            User      @relation(fields: [authorId], references: [id])
+  authorId          String    @db.ObjectId
+  comments          Comment[]
+  datePostPublished DateTime
+
+  created_at DateTime @default(now())
+  updatedAt  DateTime @default(now())
 }
 
 model User {
-  id      String   @id @default(auto()) @map("_id") @db.ObjectId
-  email   String   @unique
-  password String 
-  name    String?
-  address String?
-  city   String?
-  zip    String?
-  posts   Post[]
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  email    String  @unique
+  password String
+  name     String?
+  address  String?
+  city     String?
+  zip      String?
+  posts    Post[]
 }
 
 model Comment {
-  id      String @id @default(auto()) @map("_id") @db.ObjectId
-  comment String
-  post    Post   @relation(fields: [postId], references: [id])
-  postId  String @db.ObjectId
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  comment              String
+  post                 Post     @relation(fields: [postId], references: [id])
+  postId               String   @db.ObjectId
+  dateCommentPublished DateTime
+
+  created_at DateTime @default(now())
+  updatedAt  DateTime @default(now())
 }
