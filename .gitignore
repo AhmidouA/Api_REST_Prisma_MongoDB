@@ -1,2 +1,4 @@
 note.md
 node_modules
+.env
+.gitignore

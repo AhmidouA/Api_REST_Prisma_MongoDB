@@ -21,8 +21,11 @@ model Post {
 model User {
   id      String   @id @default(auto()) @map("_id") @db.ObjectId
   email   String   @unique
+  password String 
   name    String?
   address String?
+  city   String?
+  zip    String?
   posts   Post[]
 }
 
@@ -32,4 +35,3 @@ model Comment {
   post    Post   @relation(fields: [postId], references: [id])
   postId  String @db.ObjectId
 }
-
